@@ -2,8 +2,10 @@
 import { useRef, useState } from "react";
 import { navbarStyles } from "../assets/dummyStyles"
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useClerk } from "@clerk/react";
+import { Show, useClerk, UserButton } from "@clerk/react";
 import logo from '../assets/logo.png'
+import { Key, Menu, User, X } from "lucide-react";
+
 
 
 const STORAGE_KEY = "doctorToken_v1";
@@ -74,9 +76,73 @@ const Navbar = () => {
                         </div>
                     </div>
 
-                    {/* right */}
+                    {/* right side */}
+                    <div className={navbarStyles.rightContainer}>
+                        <Show when="signed-out">
+                            <Link to='/doctor-admin/login' className={navbarStyles.doctorAdminButton}>
+                                <User className={navbarStyles.doctorAdminIcon} />
+                                <span className={navbarStyles.doctorAdminText}>Doctor Admin</span>
+                            </Link>
+                        
+
+                            {/* patient login */}
+                       
+                            <button onClick={() => clerk.openSignIn()} className={navbarStyles.loginButton}>
+                                <Key className={navbarStyles.loginIcon} />
+                                Login
+                            </button>
+                       </Show>
+                        
+                        <Show when="signed-in">
+                            <UserButton afterSignOutUrl="/" />
+                        </Show>
+
+                        {/* to toggle */}
+                        <button onClick={() => setIsOpen(!isOpen)} className={navbarStyles.mobileToggle}>
+                            {
+                                isOpen ? (
+                                    <X className={navbarStyles.toggleIcon} />
+                                ) : (
+                                    <Menu className={navbarStyles.toggleIcon} />
+                                )
+                            }
+                        </button>
+                    </div>
                 </div>
+
+                {/* mobile navigation */}
+                {
+                    isOpen && (
+                        <div className={navbarStyles.mobileMenu}>
+                            {
+                                navItems.map((item, idx) => {
+                                    const isActive = location.pathname === item.href;
+                                    return (
+                                        <Link key={idx} to={item.href} onClick={() => setIsOpen(false)} className={`${navbarStyles.mobileMenuItem} ${isActive ? navbarStyles.mobileMenuItemActive : navbarStyles.mobileMenuItemInactive}`}>
+                                            {item.label}
+                                        </Link>
+                                    )
+                                })
+                            }
+                            <Show when="signed-out">
+                                <Link to='/doctor-admin/login' className={navbarStyles.mobileDoctorAdminButton} onClick={() => setIsOpen(false)}>
+                                    Doctor Admin
+                                </Link>
+                            
+                                <div className={navbarStyles.mobileLoginContainer}>
+                                    <button onClick={() => {
+                                        setIsOpen(false);
+                                        clerk.openSignIn();
+                                    }} className={navbarStyles.mobileLoginButton}>
+                                        Login
+                                    </button>
+                                </div>
+                           </Show>
+                        </div>
+                    )
+                }
             </div>
+            <style>{navbarStyles.animationStyles}</style>
         </nav>
     </>
     
