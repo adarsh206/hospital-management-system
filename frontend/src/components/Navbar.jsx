@@ -1,8 +1,8 @@
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { navbarStyles } from "../assets/dummyStyles"
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Show, useClerk, UserButton } from "@clerk/react";
+import { Show, SignInButton, useClerk, UserButton } from "@clerk/react";
 import logo from '../assets/logo.png'
 import { Key, Menu, User, X } from "lucide-react";
 
@@ -30,6 +30,46 @@ const Navbar = () => {
   const clerk = useClerk();
   const navigate = useNavigate();
 
+
+  // Hide and show navbar on Scroll
+   useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        setShowNavbar(false);
+      } else {
+        setShowNavbar(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
+
+  // Sync the doctor login state
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === STORAGE_KEY) {
+        setIsDoctorLoggedIn(Boolean(e.newValue));
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+
+  // close the toggle menu for mobile when click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && navRef.current && !navRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Doctors", href: "/doctors" },
@@ -43,7 +83,7 @@ const Navbar = () => {
         <div className={navbarStyles.navbarBorder}>
             
         </div>
-        <nav className={`${navbarStyles.navbarContainer} ${showNavbar ? navbarStyles.navbarVisible : navbarStyles.navbarHidden}`}>
+        <nav ref={navRef} className={`${navbarStyles.navbarContainer} ${showNavbar ? navbarStyles.navbarVisible : navbarStyles.navbarHidden}`}>
             <div className={navbarStyles.contentWrapper}>
                 <div className={navbarStyles.flexContainer}>
                     { /* Logo */}
@@ -82,6 +122,9 @@ const Navbar = () => {
                             <Link to='/doctor-admin/login' className={navbarStyles.doctorAdminButton}>
                                 <User className={navbarStyles.doctorAdminIcon} />
                                 <span className={navbarStyles.doctorAdminText}>Doctor Admin</span>
+                                
+                                {/* use this when upper code is not working
+                                <SignInButton /> */}
                             </Link>
                         
 
