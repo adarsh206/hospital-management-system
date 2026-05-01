@@ -65,3 +65,34 @@ function normalizeDocForClient(raw = {}) {
 }
 
 // to create a Doctor
+export async function createDoctor(req, res) {
+  try {
+    const body = req.body || {};
+    if(!body.email || !body.password || !body.name){
+      return res.status(400).json({
+        success: false,
+        message: "Name, email and password are required"
+      })
+    }
+
+    const emailC = (body.email || "").toLowerCase();
+    if(await Doctor.findOne({ email: emailC })){
+      return res.status(409).json({
+        success: false,
+        message: "Email already in use."
+      })
+    }
+
+    let imageUrl = body.imageUrl || null;
+    let imagePublicId = body.imagePublicId || null;
+    if(req.file?.path){
+      const uploaded = await uploadToCloudinary(req.file.path, "doctors");
+      imageUrl = uploaded?.secure_url || uploaded?.url || imageUrl;
+      imagePublicId = uploaded?.public_id || uploaded?.publicId || imagePublicId;
+    }
+
+    const schedule = parseScheduleInput(body.schedule);
+  } catch (error) {
+    
+  }
+}
