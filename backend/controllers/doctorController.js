@@ -78,8 +78,8 @@ export async function createDoctor(req, res) {
       })
     }
 
-    const emailC = (body.email || "").toLowerCase();
-    if(await Doctor.findOne({ email: emailC })){
+    const emailLC = (body.email || "").toLowerCase();
+    if(await Doctor.findOne({ email: emailLC })){
       return res.status(409).json({
         success: false,
         message: "Email already in use."
