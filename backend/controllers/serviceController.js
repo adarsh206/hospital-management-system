@@ -55,3 +55,53 @@ const parseAvailability = (v) => {
   const s = String(v ?? "available").toLowerCase();
   return s === "available" || s === "true";
 };
+
+// to create a service
+export async function createService(req, res){
+    try {
+        const b = req.body || {};
+        const instructions = parseJsonArrayField(b.instructions);
+        const rawSlots = parseJsonArrayField(b.slots);
+        const slots = normalizeSlotsToMap(rawSlots);
+        const numericPrice = sanitizePrice(b.price);
+        const available = parseAvailability(b.availability);
+
+        let imageUrl = null;
+        let imagePublicId = null;
+        
+        if (req.file) {
+        try {
+            const up = await uploadToCloudinary(req.file.path, "services");
+            imageUrl = up?.secure_url || null;
+            imagePublicId = up?.public_id || null;
+        } catch (err) {
+            console.error("Cloudinary upload error:", err);
+            }
+        } // if the file is present it will be uploaded to services folder in cloudinary and the url and public id will be stored in the database
+
+        const service = new Service({
+            name: b.name,
+            about: b.about || "",
+            shortDescription: b.shortDescription || "",
+            price: numericPrice,
+            available,
+            instructions,
+            slots,
+            imageUrl,
+            imagePublicId
+        });
+
+        const saved = await service.save();
+        return res.status(201).json({
+            success: true,
+            data: saved,
+            message: "Service created successfully."
+        })
+    } catch (error) {
+        console.error("Create Service Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Server Error or Failed to create service."
+        });
+    }
+}
