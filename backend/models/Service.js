@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-import { trim } from "validator";
+
+import pkg from 'validator';
+const { trim } = pkg;
 
 const serviceSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },

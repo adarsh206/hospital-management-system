@@ -4,6 +4,7 @@ import 'dotenv/config'
 import { clerkMiddleware } from '@clerk/express'
 import { connectDB } from './config/db.js';
 import doctorRouter from './routes/doctorRouter.js';
+import serviceRouter from './routes/serviceRouter.js';
 
 
 const app = express();
@@ -21,6 +22,7 @@ connectDB();
 
 // Routes
 app.use("/api/doctors", doctorRouter);
+app.use("/api/services", serviceRouter)
 
 
 app.get('/', (req, res) => {
