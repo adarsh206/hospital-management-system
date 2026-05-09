@@ -52,7 +52,7 @@ function resolveClerkUserId(req) {
 
 
 // to get appointments
-export const getAppointments = async(req, res) => {
+export const getAppointments = async (req, res) => {
     try {
         const { doctorId, mobile, status, search = "", limit: limitRaw = 50, page: pageRaw = 1, patientClerkId, createdBy } = req.query;
         const limit = Math.min(200, Math.max(1, parseInt(limitRaw, 10) || 50));
@@ -86,7 +86,7 @@ export const getAppointments = async(req, res) => {
 }
 
 // to getAppointment by patent
-export const getAppointmentByPatent = async(req, res) => {
+export const getAppointmentByPatent = async (req, res) => {
     try {
         const queryCreatedBy = req.query.createdBy || null;
         const clerkUserId = req.auth?.userId || null;
@@ -111,7 +111,7 @@ export const getAppointmentByPatent = async(req, res) => {
 }
 
 // to create an appointment
-export const createAppointment = async(req, res) => {
+export const createAppointment = async (req, res) => {
     try {
         const {
             doctorId,
@@ -300,3 +300,137 @@ export const createAppointment = async(req, res) => {
         return res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
+
+// to confirm the online payment and make it paid
+export const confirmPayment = async (req, res) => {
+    try {
+        const { session_id } = req.query;
+        if (!session_id) {
+            return res.status(400).json({ success: false, message: "Missing session Id" });
+        }
+
+        if(!stripe){
+            return res.status(500).json({ success: false, message: "Stripe is not configured on server" });
+        }
+
+        let session;
+        try {
+            session = await stripe.checkout.sessions.retrieve(session_id);
+        } catch (error) {
+            console.error("Stripe retrieve session error:", error);
+            return res.status(404).json({ success: false, message: "Stripe session not found" });
+        }
+
+        if(!session) return res.status(404).json({ success: false, message: "Invalid session" });
+
+        if(session.payment_status !== "paid") {
+            return res.status(400).json({ success: false, message: "Payment not completed" });
+        }
+
+        // confirmPayment
+        // Try match by sessionId first
+        let appt = await Appointment.findOneAndUpdate(
+            { sessionId: session_id },
+            {
+                "payment.status": "Paid",
+                "payment.providerId": session.payment_intent || session.payment_intent_id || null,
+                status: "Confirmed",
+                paidAt: new Date(),
+            },
+            { new: true }
+        );
+
+        // fallback: try match via metadata (doctorId + mobile + patientName)
+        if (!appt) {
+            const meta = session.metadata || {};
+            if (meta.doctorId && meta.mobile && meta.patientName) {
+                appt = await Appointment.findOneAndUpdate(
+                {
+                    doctorId: meta.doctorId,
+                    mobile: meta.mobile,
+                    patientName: meta.patientName,
+                    fees: Math.round((session.amount_total || 0) / 100) || undefined,
+                },
+                {
+                    "payment.status": "Paid",
+                    "payment.providerId": session.payment_intent || null,
+                    status: "Confirmed",
+                    paidAt: new Date(),
+                    sessionId: session_id,
+                },
+                { new: true }
+                );
+            }
+        }
+
+        // last attempt: find appointment created in last 15 minutes with matching amount
+            if (!appt) {
+                const amount = Math.round((session.amount_total || 0) / 100);
+                const fifteenAgo = new Date(Date.now() - 1000 * 60 * 15);
+                appt = await Appointment.findOneAndUpdate(
+                    { fees: amount, createdAt: { $gte: fifteenAgo } },
+                    {
+                    "payment.status": "Paid",
+                    "payment.providerId": session.payment_intent || null,
+                    status: "Confirmed",
+                    paidAt: new Date(),
+                    sessionId: session_id,
+                    },
+                    { new: true }
+                );
+            }
+
+        if (!appt) {
+            return res.status(404).json({ success: false, message: "Appointment not found for this payment session" });
+        }
+
+        return res.json({ success: true, appointment: appt });
+
+    } catch (error) {
+        console.error("ConfirmPayment error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });   
+    }
+}
+
+// to update an appointment
+export const updateAppointment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const body = req.body || {};
+        const appt = await Appointment.findById(id);
+        
+        if (!appt) {
+            return res.status(404).json({ success: false, message: "Appointment not found" });
+        }
+
+        //updateAppointment 
+        const terminal = appt.status === "Completed" || appt.status === "Canceled";
+        if (terminal && body.status && body.status !== appt.status) {
+            return res.status(400).json({ success: false, message: "Cannot change status of a completed/canceled appointment" });
+        }
+
+        const update = {};
+        if (body.status) update.status = body.status;
+        if (body.notes !== undefined) update.notes = body.notes;
+
+        if (body.date && body.time) {
+            if (appt.status === "Completed" || appt.status === "Canceled") {
+                return res.status(400).json({ success: false, message: "Cannot reschedule completed/canceled appointment" });
+            }
+
+            update.date = body.date;
+            update.time = body.time;
+            update.status = "Rescheduled";
+            update.rescheduledTo = { date: body.date, time: body.time };
+        }
+
+        const updated = await Appointment.findByIdAndUpdate(id, update, { new: true, runValidators: true }).populate({ path: "doctorId", select: "name imageUrl"}).lean();
+
+        return res.json({ success: true, appointment: updated });
+
+    } catch (error) {
+        console.error("UpdateAppointment error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });   
+    }
+}
