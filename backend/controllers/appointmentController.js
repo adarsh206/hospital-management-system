@@ -3,7 +3,7 @@ import Doctor from "../models/Doctor.js";
 import dotenv from "dotenv";
 import Stripe from "stripe";
 import { getAuth } from "@clerk/express";
-import { clerkClient } from "@clerk/express";
+import { clerkClient } from "@clerk/clerk-sdk-node";
 dotenv.config();
 
 const STRIPE_KEY = process.env.STRIPE_SECRET_KEY;
@@ -433,4 +433,108 @@ export const updateAppointment = async (req, res) => {
         console.error("UpdateAppointment error:", error);
         return res.status(500).json({ success: false, message: "Server error" });   
     }
+}
+
+// to cancelAppointment
+export const cancelAppointment = async (req, res) => {
+    try {
+        
+        const { id } = req.params;
+        const appt = await Appointment.findById(id);
+        
+        if (!appt) {
+            return res.status(404).json({ success: false, message: "Appointment not found" });
+        }
+        appt.status = "Canceled";
+        await appt.save();
+        return res.json({ success: true, appointment: appt });
+
+    } catch (error) {
+        console.error("CancelAppointment error:", error);
+        return res.status(500).json({ success: false, message: "Server error" }); 
+    }
+}
+
+// to get the stats
+export const getStats = async (req, res) => {
+    try {
+        const total = await Appointment.countDocuments();
+        const paidAgg = await Appointment.aggregate([{ $match: { "payment.status": "Paid" } }, { $group: { _id: null, total: { $sum: "$fees" } } }]);
+        const revenue = (paidAgg[0] && paidAgg[0].total) || 0;
+
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const recent = await Appointment.countDocuments({ createdAt: { $gte: sevenDaysAgo } });
+
+        return res.json({ success: true, stats: { total, revenue, recentLast7Days: recent } });
+
+    } catch (error) {
+        console.error("GetStats error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
+
+// to getAppointments By Doctor
+export const getAppointmentsByDoctor = async (req, res) => {
+    try {
+        const { doctorId } = req.params;
+        if(!doctorId){
+            return res.status(400).json({ success: false, message: "Doctor ID is required" });
+        }
+
+        const { mobile, status, search = "", limit: limitRaw = 50, page: pageRaw = 1 } = req.query;
+        const limit = Math.min(200, Math.max(1, parseInt(limitRaw, 10) || 50));
+        const page = Math.max(1, parseInt(pageRaw, 10) || 1);
+        const skip = (page - 1) * limit;
+
+        const filter = { doctorId };
+        if (mobile) filter.mobile = mobile;
+        if (status) filter.status = status;
+        
+        if (search) {
+            const re = new RegExp(search, "i");
+            filter.$or = [{ patientName: re }, { mobile: re }, { notes: re }];
+        }
+
+        const items = await Appointment.find(filter).sort({ date: 1, time: 1 }).skip(skip).limit(limit).populate("doctorId", "name specialization owner imageUrl image").lean();
+
+        const total = await Appointment.countDocuments(filter);
+        return res.json({
+            success: true,
+            appointments: items,
+            meta: { page, limit, total, count: items.length }
+        })
+
+    } catch (error) {
+        console.error("GetAppointmentsByDoctor error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
+
+// to get Register User count
+export async function getRegisteredUserCount(req, res) {
+    try {
+
+        const totalUsers = await clerkClient.users.getCount();
+        return res.json({ success: true, totalUsers });
+
+    } catch (error) {
+        console.error("GetRegisteredUserCount error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
+
+export default {
+    getAppointments,
+    getAppointmentByPatent,
+    createAppointment,
+    confirmPayment,
+    updateAppointment,
+    cancelAppointment,
+    getStats,
+    getAppointmentsByDoctor,
+    getRegisteredUserCount,
 }
