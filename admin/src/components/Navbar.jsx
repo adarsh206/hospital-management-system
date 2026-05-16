@@ -97,6 +97,7 @@ const Navbar = () => {
           localStorage.removeItem("clerk_token")
         } catch (e) {
           // ignore any error
+          console.log(e)
         }
         return;
       }
@@ -147,6 +148,7 @@ const Navbar = () => {
         localStorage.removeItem("clerk_token");     
       } catch (e) {
         // ignore
+        console.log(e)
       }
       navigate("/");
     }
