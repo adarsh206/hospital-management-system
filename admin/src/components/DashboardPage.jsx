@@ -310,6 +310,15 @@ const DashboardPage = () => {
                     ))}
                 </div>
               </div>
+              {
+                filteredDoctors.length > INITIAL_COUNT && (
+                    <div className={s.showMoreContainer}>
+                        <button className={s.showMoreButton + " " + s.cursorPointer} onClick={() => setShowAll((s) => !s)}>
+                            {showAll ? "Show less" : `Show more (${filteredDoctors.length - INITIAL_COUNT})`}
+                        </button>
+                    </div>
+                )
+              }
             </div>
         </div>
     </div>
