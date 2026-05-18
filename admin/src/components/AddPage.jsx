@@ -1,5 +1,6 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { doctorDetailStyles as s } from '../assets/dummyStyles'
+import { User, XCircle } from 'lucide-react';
 
 
 // HELPERS FUNCTIONS
@@ -76,6 +77,7 @@ const AddPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // compute todays date in local timezone.
   const [today] = useState(() => {
     const d = new Date();
     const tzOffset = d.getTimezoneOffset();
@@ -83,6 +85,7 @@ const AddPage = () => {
     return local.toISOString().split("T")[0];
   });
 
+  // it will show a toast for 3 sec
   useEffect(() => {
     if (!toast.show) return;
     const t = setTimeout(() => setToast((s) => ({ ...s, show: false })), 3000);
@@ -91,6 +94,7 @@ const AddPage = () => {
 
   const showToast = (type, message) => setToast({ show: true, type, message });
 
+  // this function show the image preview
   function handleImage(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
@@ -106,6 +110,7 @@ const AddPage = () => {
     }));
   }
 
+  // this function will remove the image preview
   function removeImage() {
     if (form.imagePreview && form.imageFile) {
       try {
@@ -120,17 +125,20 @@ const AddPage = () => {
     }
   }
 
+  // to add slots
   function addSlotToForm() {
     if (!slotDate || !slotHour) {
       showToast("error", "Select date + time");
       return;
     }
+    // prevent pst dates
     if (slotDate < today) {
       showToast("error", "Cannot add a slot in the past");
       return;
     }
     const time = `${slotHour}:${slotMinute} ${slotAmpm}`;
 
+    // if date is of today then prevent from time
     if (slotDate === today) {
       const now = new Date();
       const nowMinutes = now.getHours() * 60 + now.getMinutes();
@@ -156,6 +164,7 @@ const AddPage = () => {
     setSlotMinute("00");
   }
 
+  // to remove the added slots
   function removeSlot(date, time) {
     setForm((f) => {
       const sched = { ...f.schedule };
@@ -165,6 +174,7 @@ const AddPage = () => {
     });
   }
 
+  // it will convert schedule Object into an array.
   function getFlatSlots(s) {
     const arr = [];
     Object.keys(s)
@@ -197,6 +207,7 @@ const AddPage = () => {
     return true;
   }
 
+  // to add a doctor
   async function handleAdd(e) {
     e.preventDefault();
     if (!validate(form)) {
@@ -266,6 +277,7 @@ const AddPage = () => {
         } catch (err) {}
       }
 
+      // reset the field after submit is done
       setForm({
         name: "",
         specialization: "",
@@ -304,8 +316,40 @@ const AddPage = () => {
   }
 
   return (
-    <div>
-        Add
+    <div className={s.pageContainer}>
+        <div className={s.maxWidthContainerLg + " " + s.headerContainer}>
+            <div className={s.headerFlexContainer}>
+                <div className={s.headerIconContainer}>
+                    <User className="text-white" size={32}/>
+                </div>
+                <h1 className={s.headerTitle}>Add New Doctor</h1>
+            </div>
+        </div>
+
+        {/** */}
+        <div className={s.maxWidthContainer + " " + s.formContainer}>
+            <form onSubmit={handleAdd} className={s.formGrid}>
+                <div className="md:col-span-2">
+                    <label className={s.label}>Upload Profile Image</label>
+                    <div className='flex flex-wrap items-center gap-4'>
+                        <input type='file' ref={fileInputRef} accept='image/*' onChange={handleImage} className={s.fileInput} />
+                        {
+                            form.imagePreview && (
+                                <div className='relative group'>
+                                    <img src={form.imagePreview} alt='preview' className={s.imagePreview} />
+                                    <button type='button' onClick={removeImage} className={s.removeImageButton + " " + s.cursorPointer}>
+                                        <XCircle size={14} />
+                                    </button>
+                                </div>
+                            )
+                        }
+                    </div>
+                </div>
+                <input className={s.inputBase} placeholder='Full Name' value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value})} />
+                <input className={s.inputBase} placeholder='Specialization' value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value})} />
+                <input className={s.inputBase} placeholder='Location' value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value})} />
+            </form>
+        </div>
     </div>
   )
 }
