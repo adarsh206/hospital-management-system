@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { doctorDetailStyles as s } from '../assets/dummyStyles'
-import { Calendar, Eye, EyeClosed, Plus, Trash2, User, XCircle } from 'lucide-react';
+import { Calendar, CheckCircle, Eye, EyeClosed, Plus, Trash2, User, XCircle } from 'lucide-react';
 
 
 // HELPERS FUNCTIONS
@@ -349,7 +349,6 @@ const AddPage = () => {
                 <input className={s.inputBase} placeholder='Specialization' value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value})} />
                 <input className={s.inputBase} placeholder='Location' value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value})} />
                 <input className={s.inputBase} placeholder='Experience' value={form.experience} onChange={(e) => setForm({ ...form, experience: e.target.value})} />
-                <input className={s.inputBase} placeholder='Location' value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value})} />
                 <input className={s.inputBase} placeholder='Qualifications' value={form.qualifications} onChange={(e) => setForm({ ...form, qualifications: e.target.value})} />
                 <input className={s.inputBase} placeholder='Consultation Fee' value={form.fee} onChange={(e) => setForm({ ...form, fee: e.target.value})} />
 
@@ -499,6 +498,43 @@ const AddPage = () => {
                     </button>
                 </div>
             </form>
+        </div>
+
+        {/* TOAST */}
+        {toast.show && (
+          <div
+            className={s.toastContainer + " " + 
+              (toast.type === "success" ? s.toastSuccess : s.toastError)}
+          >
+            {toast.type === "success" ? (
+              <CheckCircle size={22} />
+            ) : (
+              <XCircle size={22} />
+            )}
+            <span>{toast.message}</span>
+          </div>
+        )}
+
+        {/** Simple Overview of added doctor */}
+        <div className={s.doctorListContainer}>
+          {doctorList.length ? (
+            <div className={s.doctorListGrid}>
+              {doctorList.map((d) => (
+                <div key={d.id || d._id} className={s.doctorCard}>
+                  <div className={s.doctorCardContent}>
+                    <img src={d.imageUrl || d.imagePreview} alt={d.name} className={s.doctorImage} />
+
+                    <div>
+                      <div className={s.doctorName}>{d.name}</div>
+                      <div className={s.doctorSpecialization}>{d.specialization}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className={s.emptyState}>No Doctor Yet</p>
+          )}
         </div>
     </div>
   )
