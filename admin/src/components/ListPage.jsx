@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { doctorListStyles } from '../assets/dummyStyles'
-import { Users } from 'lucide-react';
+import { Search, Users } from 'lucide-react';
 
 
 // HELPER FUNCTIONS
@@ -208,9 +208,55 @@ const ListPage = () => {
             <div className={doctorListStyles.headerIcon}>
               <Users size={20} className={doctorListStyles.headerIconSvg}/>
             </div>
+            <div>
+              <h1 className={doctorListStyles.headerTitle}>Find a Doctor</h1>
+              <p className={doctorListStyles.headerSubtitle}>Search by name or specialization</p>
+            </div>
+          </div>
+
+          <div className={doctorListStyles.headerSearchContainer}>
+            <div className={doctorListStyles.searchBox}>
+              <Search size={16} className={doctorListStyles.searchIcon} />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder='Search Doctors, specialization' className={doctorListStyles.searchInput} />
+            </div>
+            <button onClick={() => {
+              setQuery(""); 
+              setExpanded(null);
+              setShowAll(false);
+              setFilterStatus("all");
+              }} className={doctorListStyles.clearButton}>
+                Clear
+              </button>
           </div>
         </div>
+
+        <div className={doctorListStyles.filterContainer}>
+          <button onClick={() => applyStatusFilter("available")} className={doctorListStyles.filterButton(filterStatus === "available", "emerald",)}>
+            Available
+          </button>
+
+          <button onClick={() => applyStatusFilter("unavailable")} className={doctorListStyles.filterButton(filterStatus === "unavailable", "red",)}>
+            Unavailable
+          </button>
+        </div>
       </header>
+
+      <main className={doctorListStyles.gridContainer}>
+        {
+          loading && (
+            <div className={doctorListStyles.loadingContainer}>
+              Loading Doctors...
+            </div>
+          )
+        }
+        {
+          !loading && filtered.length === 0 && (
+            <div className={doctorListStyles.noResultsContainer}>
+              No doctors match your search.
+            </div>
+          )
+        }
+      </main>
     </div>
   )
 }
