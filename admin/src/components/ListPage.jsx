@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { doctorListStyles } from '../assets/dummyStyles'
-import { Search, Users } from 'lucide-react';
+import { EyeClosed, Search, Star, Trash2, Users } from 'lucide-react';
 
 
 // HELPER FUNCTIONS
@@ -255,6 +255,66 @@ const ListPage = () => {
               No doctors match your search.
             </div>
           )
+        }
+        {
+          displayed.map((doc) => {
+            const id = doc._id || doc.id;
+            const isOpen = expanded === id;
+            const isAvailable = doc.availability === "Available";
+
+            const scheduleMap = buildScheduleMap(doc.schedule || {});
+            const sortedDates = getSortedScheduleDates(scheduleMap);
+
+            return (
+              <article key={id} className={doctorListStyles.article}>
+                <div className={doctorListStyles.articleContent}>
+                  <img src={doc.imageUrl || doc.image || ""} alt={doc.name} className={doctorListStyles.doctorImage} />
+
+                  <div className={doctorListStyles.doctorInfoContainer}>
+                    <div className={doctorListStyles.doctorHeader}>
+                      <div className='min-w-0 w-full'>
+                        <div className='flex items-center gap-2 flex-wrap'>
+                          <h3 className={doctorListStyles.doctorName}>{doc.name}</h3>
+                          <span className={doctorListStyles.availabilityBadge(isAvailable,)}>
+                            <span className={doctorListStyles.availabilityBadge(isAvailable)} />
+                            {isAvailable ? "Available" : "Unavailable"}
+                          </span>
+                        </div>
+
+                        <div className={doctorListStyles.doctorDetails}>
+                          {doc.specialization} • {doc.experience} years
+                        </div>
+                      </div>
+
+                      <div className={doctorListStyles.ratingContainer}>
+                        <div className={doctorListStyles.rating}>
+                          <Star size={14} /> {doc.rating}
+                        </div>
+                        <button onClick={() => toggle(id)} className={doctorListStyles.toggleButton(isOpen)}>
+                          <EyeClosed size={18} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className={doctorListStyles.statsContainer}>
+                      <div className={doctorListStyles.statsLabel}>Patients</div>
+                      <div className={doctorListStyles.statsValue}>
+                        <Users size={14} />{doc.patients}
+                      </div>
+
+                      <div className={doctorListStyles.actionContainer}>
+                        <div className='flex items-center gap-2'>
+                          <button onClick={() => removeDoctor(id)} className={doctorListStyles.deleteButton}>
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            )
+          })
         }
       </main>
     </div>
