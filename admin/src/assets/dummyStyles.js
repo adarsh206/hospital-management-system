@@ -894,7 +894,7 @@ export const serviceDashboardStyles = {
     container: "mt-3 sm:mt-0 flex items-center gap-3",
     countText: "text-xs text-slate-600",
     button: (hasServicesProp) => 
-      `px-3 py-1 rounded-full text-sm ${
+      `px-3 py-1 rounded-full text-sm cursor-pointer ${
         hasServicesProp
           ? "bg-gray-200 text-gray-500 cursor-not-allowed"
           : "bg-white text-emerald-600 border border-emerald-200 hover:shadow-sm"
