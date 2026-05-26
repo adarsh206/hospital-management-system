@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { addServiceStyles } from "../assets/dummyStyles"
+import { AlertTriangle, CheckCircle, Clock, Image, Plus, Trash2, XCircle } from "lucide-react";
 
 
 const AddService = ({ serviceId }) => {
@@ -283,7 +284,7 @@ const AddService = ({ serviceId }) => {
       fd.append("about", about);
 
       const numericPrice = String(price).replace(/[^\d.-]/g, "");
-      
+
       fd.append("price", numericPrice === "" ? "0" : numericPrice);
       fd.append("availability", availability);
       // arrays serialized as JSON
@@ -338,8 +339,124 @@ const AddService = ({ serviceId }) => {
   }
 
     return (
-        <div>
-            Add Service
+        <div className={addServiceStyles.container.main}>
+            <div className={addServiceStyles.toast.container}>
+                {toast && (
+                    <div className={`${addServiceStyles.toast.toastBase} ${
+                        toast.type === "error" ? addServiceStyles.toast.toastError : 
+                        toast.type === "info" ? addServiceStyles.toast.toastInfo:
+                        addServiceStyles.toast.toastSuccess
+                        } animate-slideIn`}>
+                        <div className={addServiceStyles.toast.iconContainer(toast.type)}>
+                            {toast.type === "info" ? (
+                                <AlertTriangle className="w-5 h-5" />
+                            ) : toast.type === "info" ? (
+                                <Clock className="w-5 h-5"/>
+                            ) : (
+                                <CheckCircle className="w-5 h-5"/>
+                            )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                            <div className={addServiceStyles.toast.title}>{toast.title}</div>
+                            <div className={addServiceStyles.toast.message}>{toast.message}</div>
+                        </div>
+                        <button onClick={() => setToast(null)} className={addServiceStyles.buttons.toastClose}>
+                            <XCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            <form onSubmit={handleSubmit} className={addServiceStyles.container.form}>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+                    <div>
+                        <h1 className={addServiceStyles.header.title}>{serviceId ? "Edit Service" : "Add Service"}</h1>
+                        <p className={addServiceStyles.header.subtitle}>Create a beautiful service card with unique slots</p>
+                    </div>
+                    <div className={addServiceStyles.headerActions}>
+                        <button type="button" onClick={resetForm} className={addServiceStyles.buttons.reset}>Reset</button>
+                        <button type="submit" disabled={submitting} className={addServiceStyles.buttons.submit}>
+                            {submitting ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin">
+                                        Saving...
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <CheckCircle className="w-4 h-4" />
+                                    {serviceId ? "Update Service" : "Save Service"}
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {/** left side */}
+                <div className={addServiceStyles.grids.main}>
+                    <div className="lg:col-span-1 md:col-span-1 col-span-1 flex flex-col items-center">
+                        <div className={addServiceStyles.imageUpload.container(errors.image)}>
+                            <div className={addServiceStyles.imageUpload.preview}>
+                                {imagePreview ? (
+                                    <img src={imagePreview} alt="preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className={addServiceStyles.imageUpload.placeholder}>
+                                        <Image className="w-10 h-10" />
+                                        <div className="mt-2 text-sm">Service image (required)</div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="w-full flex gap-2 items-center">
+                                <input type="file" accept="image/*" ref={fileRef} onChange={handleImageChange} className="hidden"/>
+                                <button type="button" onClick={() => fileRef.current?.click()} className={addServiceStyles.buttons.uploadImage}>
+                                    <Plus className="w-4 h-4" />{" "}
+                                    {imagePreview ? "Replace Image" : "Upload Image"}
+                                </button>
+
+                                {(imagePreview || hasExistingImage) && (
+                                    <button type="button"
+                                        onClick={() => {
+                                            // If current preview is a blob URL, revoke it
+                                            if (imagePreview && imagePreview.startsWith("blob:")) {
+                                                try {
+                                                URL.revokeObjectURL(imagePreview);
+                                                } catch (err) {}
+                                            }
+                                            setImagePreview(null);
+                                            setImageFile(null);
+                                            // mark that user wants to remove the existing image
+                                            if (hasExistingImage) {
+                                                setRemoveImage(true);
+                                                setHasExistingImage(false);
+                                            }
+                                            if (fileRef.current) fileRef.current.value = null;
+                                            }}
+                                            className={addServiceStyles.buttons.removeImage}>
+                                        <Trash2 className="w-4 h-4 text-red-500" />
+                                    </button>
+                                    )}
+                            </div>
+
+                            {hasExistingImage && (
+                                <div className="w-full text-xs text-gray-600 mt-2 flex items-center gap-2">
+                                    <input id="remove-img" type="checkbox" checked={removeImage} onChange={(e) => {
+                                        setRemoveImage(Boolean(e.target.checked));
+                                        if (e.target.checked) {
+                                            setImagePreview(null);
+                                            setImageFile(null);
+                                            setHasExistingImage(false);
+                                        }
+                                        }} className="rounded" />
+                                    <label htmlFor="remove-img">Remove existing image</label>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    { /** right side */}
+                </div>
+            </form>
         </div>
     )
 }
