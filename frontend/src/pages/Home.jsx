@@ -1,5 +1,6 @@
 
 import Banner from '../components/Banner'
+import Certification from '../components/Certification'
 import Navbar from '../components/Navbar'
 
 const Home = () => {
@@ -7,6 +8,7 @@ const Home = () => {
     <div>
         <Navbar />
         <Banner />
+        <Certification />
     </div>
   )
 }

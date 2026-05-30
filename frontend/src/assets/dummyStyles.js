@@ -134,11 +134,11 @@ export const bannerStyles = {
   // Book appointment button
   bookButton: "group relative lg:whitespace-nowrap bg-linear-to-r from-green-500 to-emerald-300 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold transform transition-all duration-300 shadow-2xl hover:shadow-3xl overflow-hidden text-sm sm:text-base",
   bookButtonOverlay: "absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000",
-  bookButtonContent: "relative flex items-center justify-center gap-2",
+  bookButtonContent: "relative flex items-center justify-center gap-2 cursor-pointer",
   bookButtonIcon: "w-4 h-4 sm:w-5 sm:h-5",
   
   // Emergency call button
-  emergencyButton: "group border-2 lg:whitespace-nowrap border-red-400 text-red-600 bg-red-300 px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold transform transition-all duration-300 backdrop-blur-sm hover:shadow-lg hover:bg-red-400/80 text-sm sm:text-base",
+  emergencyButton: "group border-2 lg:whitespace-nowrap border-red-400 text-red-600 bg-red-300 px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold transform transition-all duration-300 backdrop-blur-sm hover:shadow-lg hover:bg-red-400/80 text-sm sm:text-base cursor-pointer",
   emergencyButtonContent: "flex items-center justify-center gap-2",
   emergencyButtonIcon: "w-4 h-4 sm:w-5 sm:h-5",
   
@@ -167,7 +167,7 @@ export const commonStyles = {
 
 export const certificationStyles = {
   // Container styles
-  container: "relative py-6 bg-linear-to-brfrom-emerald-50 via-green-50 to-teal-50 overflow-hidden",
+  container: "relative py-6 bg-linear-to-br from-emerald-50 via-green-50 to-teal-50 overflow-hidden",
   
   // Background styles
   backgroundGrid: "absolute inset-0",
