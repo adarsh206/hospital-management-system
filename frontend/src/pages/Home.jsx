@@ -2,6 +2,7 @@
 import Banner from '../components/Banner'
 import Certification from '../components/Certification'
 import Navbar from '../components/Navbar'
+import HomeDoctor from '../components/HomeDoctor'
 
 const Home = () => {
   return (
@@ -9,6 +10,7 @@ const Home = () => {
         <Navbar />
         <Banner />
         <Certification />
+        <HomeDoctor />
     </div>
   )
 }
