@@ -838,6 +838,7 @@ export const testimonialStyles = {
   // Scroll container
   scrollContainer: "h-56 sm:h-72 md:h-[360px] lg:h-[400px] overflow-y-hidden no-scrollbar p-3 sm:p-4",
   
+  
   // Testimonial card
   testimonialCard: "bg-white font-[pacifico] rounded-xl shadow-lg p-4 sm:p-5 mb-4 transition-transform duration-300 border-l-4 w-full max-w-xl mx-auto",
   leftCardBorder: "border-blue-400 hover:shadow-blue-100",

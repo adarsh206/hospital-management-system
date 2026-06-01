@@ -71,25 +71,26 @@ const Testimonial = () => {
     useEffect(() => {
         const scrollLeft = scrollRefLeft.current;
         const scrollRight = scrollRefRight.current;
+        
         if (!scrollLeft || !scrollRight) return;
 
         let scrollSpeed = 0.5; // preserved animation speed
         let rafId;
 
         const smoothScroll = () => {
-        if (!isPaused) {
-            scrollLeft.scrollTop += scrollSpeed;
-            scrollRight.scrollTop -= scrollSpeed;
+            if (!isPaused) {
+                scrollLeft.scrollTop += scrollSpeed;
+                scrollRight.scrollTop += scrollSpeed;
 
-            // seamless infinite loop
-            if (scrollLeft.scrollTop >= scrollLeft.scrollHeight / 2) {
-            scrollLeft.scrollTop = 0;
+                // seamless infinite loop
+                if (scrollLeft.scrollTop >= scrollLeft.scrollHeight / 2) {
+                    scrollLeft.scrollTop = 0;
+                }
+                if (scrollRight.scrollTop >= scrollRight.scrollHeight / 2) {
+                    scrollRight.scrollTop = 0;
+                }
             }
-            if (scrollRight.scrollTop <= 0) {
-            scrollRight.scrollTop = scrollRight.scrollHeight / 2;
-            }
-        }
-        rafId = requestAnimationFrame(smoothScroll);
+            rafId = requestAnimationFrame(smoothScroll);
         };
 
         rafId = requestAnimationFrame(smoothScroll);
@@ -104,36 +105,30 @@ const Testimonial = () => {
         ));
 
     const TestimonialCard = ({ testimonial, direction }) => (
-        <div
-        className={`${testimonialStyles.testimonialCard} ${
-            direction === "left"
-            ? testimonialStyles.leftCardBorder
-            : testimonialStyles.rightCardBorder
-        }`}
-        >
-        <div className={testimonialStyles.cardContent}>
-            <img src={testimonial.image} alt={testimonial.name} className={testimonialStyles.avatar} />
-            <div className={testimonialStyles.textContainer}>
-            <div className={testimonialStyles.nameRoleContainer}>
-                <div>
-                    <h4 className={`${testimonialStyles.name} ${direction === "left" ? testimonialStyles.leftName : testimonialStyles.rightName}`}>
-                        {testimonial.name}
-                    </h4>
-                    <p className={testimonialStyles.role}>{testimonial.role}</p>
+        <div className={`${testimonialStyles.testimonialCard} ${direction === "left" ? testimonialStyles.leftCardBorder : testimonialStyles.rightCardBorder}`}>
+            <div className={testimonialStyles.cardContent}>
+                <img src={testimonial.image} alt={testimonial.name} className={testimonialStyles.avatar} />
+                <div className={testimonialStyles.textContainer}>
+                <div className={testimonialStyles.nameRoleContainer}>
+                    <div>
+                        <h4 className={`${testimonialStyles.name} ${direction === "left" ? testimonialStyles.leftName : testimonialStyles.rightName}`}>
+                            {testimonial.name}
+                        </h4>
+                        <p className={testimonialStyles.role}>{testimonial.role}</p>
+                    </div>
+                    <div className={testimonialStyles.starsContainer}>
+                        {renderStars(testimonial.rating)}
+                    </div>
                 </div>
-                <div className={testimonialStyles.starsContainer}>
+
+                <p className={testimonialStyles.quote}>"{testimonial.text}"</p>
+
+                {/* Stars on small screens beneath text */}
+                <div className={testimonialStyles.mobileStarsContainer}>
                     {renderStars(testimonial.rating)}
                 </div>
+                </div>
             </div>
-
-            <p className={testimonialStyles.quote}>"{testimonial.text}"</p>
-
-            {/* Stars on small screens beneath text */}
-            <div className={testimonialStyles.mobileStarsContainer}>
-                {renderStars(testimonial.rating)}
-            </div>
-            </div>
-        </div>
         </div>
     );
 
@@ -146,6 +141,34 @@ const Testimonial = () => {
             Real stories from doctors and patients sharing their positive experience with our healthcare platform.
         </p>
       </div>
+
+      <div className={testimonialStyles.grid} onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
+        <div className={`${testimonialStyles.columnContainer} ${testimonialStyles.leftColumnBorder}`}>
+            <div className={`${testimonialStyles.columnHeader} ${testimonialStyles.leftColumnHeader}`}>
+                👩‍⚕️ Medical Professionals
+            </div>
+
+            <div ref={scrollRefLeft} className={testimonialStyles.scrollContainer} onTouchStart={() => setIsPaused(true)} onTouchEnd={() => setIsPaused(false)}>
+                {[...leftTestimonials, ...leftTestimonials].map((t, i) => (
+                    <TestimonialCard key={`L-${i}`} testimonial={t} direction="left" />
+                ))}
+            </div>
+        </div>
+        
+        <div className={`${testimonialStyles.columnContainer} ${testimonialStyles.rightColumnBorder}`}>
+            <div className={`${testimonialStyles.columnHeader} ${testimonialStyles.rightColumnHeader}`}>
+                🧑‍💼 Patients
+            </div>
+
+            <div ref={scrollRefRight} className={testimonialStyles.scrollContainer} onTouchStart={() => setIsPaused(true)} onTouchEnd={() => setIsPaused(false)}>
+                {[...rightTestimonials, ...rightTestimonials].map((t, i) => (
+                    <TestimonialCard key={`R-${i}`} testimonial={t} direction="right" />
+                ))}
+            </div>
+        </div>
+      </div>
+      
+      <style>{testimonialStyles.animationStyles}</style>
     </div>
   )
 }
