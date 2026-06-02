@@ -4,6 +4,7 @@ import Certification from '../components/Certification'
 import Navbar from '../components/Navbar'
 import HomeDoctor from '../components/HomeDoctor'
 import Testimonial from '../components/Testimonial'
+import Footer from '../components/Footer'
 
 const Home = () => {
   return (
@@ -13,6 +14,7 @@ const Home = () => {
         <Certification />
         <HomeDoctor />
         <Testimonial />
+        <Footer />
     </div>
   )
 }
