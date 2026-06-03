@@ -433,7 +433,7 @@ export const footerStyles = {
   desktopEmailInput: "w-full px-6 py-4 text-base text-emerald-800 bg-white border-2 border-emerald-200 rounded-full focus:outline-none focus:ring-4 focus:ring-emerald-300 focus:border-emerald-400 transition-all duration-300 transform shadow-lg placeholder-emerald-400",
   desktopSubscribeButton: "absolute right-2 xl:px-2 top-2 bg-linear-to-r from-emerald-500 to-green-600 text-white px-4 py-2 rounded-full cursor-pointer transition-all duration-300 transform flex items-center shadow-lg hover:shadow-xl",
   desktopButtonIcon: "w-4 h-4 mr-2",
-  desktopButtonText: "font-semibold",
+  desktopButtonText: "font-semibold md:font-medium",
   
   // Social links
   socialContainer: "flex gap-3 justify-center lg:justify-start mt-6",
