@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { doctorsPageStyles } from "../assets/dummyStyles"
+import { Medal, Search, X } from "lucide-react"
+import { Link } from "react-router-dom"
 
 const DoctorPage = () => {
 
@@ -143,8 +145,92 @@ const DoctorPage = () => {
     
 
   return (
-    <div>
-      Doctors
+    <div className={doctorsPageStyles.mainContainer}>
+      <div className={doctorsPageStyles.backgroundShape1}></div>
+      <div className={doctorsPageStyles.backgroundShape2}></div>
+
+      <div className={doctorsPageStyles.wrapper}>
+        <div className={doctorsPageStyles.headerContainer}>
+            <h1 className={doctorsPageStyles.headerTitle}>Our Medical Experts</h1>
+            <p className={doctorsPageStyles.headerSubtitle}>Find your ideal doctor by name or specialization</p>
+        </div>
+
+        <div className={doctorsPageStyles.searchContainer}>
+            <div className={doctorsPageStyles.searchWrapper}>
+                <input type="text" placeholder="Search doctor by name or specialization..." className={doctorsPageStyles.searchInput} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <Search className={doctorsPageStyles.searchIcon} />
+                {searchTerm.length > 0 && (
+                    <button className={doctorsPageStyles.clearButton} onClick={() => setSearchTerm("")}>
+                        <X size={20} strokeWidth={2.5} />
+                    </button>
+                )}
+            </div>
+        </div>
+
+        {error && (
+            <div className={doctorsPageStyles.errorContainer}>
+                <div className={doctorsPageStyles.errorText}>{error}</div>
+                    <div className="flex items-center justify-center gap-3">
+                        <button onClick={retry} className={doctorsPageStyles.retryButton}>
+                            Retry
+                        </button>
+                    </div>  
+            </div>
+        )}
+
+        {/** loading */}
+        {loading ? (
+            <div className={doctorsPageStyles.skeletonGrid}>
+                {Array.from({length: 8}).map((_, i) => (
+                    <div className={doctorsPageStyles.skeletonCard}>
+                        <div className={doctorsPageStyles.skeletonImage}></div>
+                        <div className={doctorsPageStyles.skeletonName}></div>
+                        <div className={doctorsPageStyles.skeletonSpecialization}></div>
+                        <div className={doctorsPageStyles.skeletonButton}></div>
+                    </div>
+                ))}
+            </div>
+        ) : (
+            <div className={`${doctorsPageStyles.doctorsGrid} ${filteredDoctors.length === 0 ? "opacity-70" : "opacity-100"}`}>
+                {displayedDoctors.length > 0 (
+                    displayedDoctors.map((doctor, index) => (
+                        <div key={doctor.id || `${doctor.name}-${index}`} className={`${doctorsPageStyles.doctorCard} ${!doctor.available ? doctorsPageStyles.doctorCardUnavailable : ""}`}
+                            style={{ animationDelay: `${index * 90}ms`}} role="article">
+                                {doctor.available ? (
+                                    <Link to={`/doctors/${doctor.id}`} state={{ doctor: doctor.raw || doctor }} className={doctorsPageStyles.focusRing}>
+                                        <div className={doctorsPageStyles.imageContainer}>
+                                            <img src={doctor.image || "/placeholder-doctor.jpg"} alt={doctor.name} loading="lazy"
+                                                className={doctorsPageStyles.doctorImage}
+                                                onError={(e) => {
+                                                    e.currentTarget.onerror = null;
+                                                    e.currentTarget.src = "/placeholder-doctor.jpg";
+                                            }} />
+                                        </div>
+                                    </Link>
+                                ) : (
+                                    <div className={`${doctorsPageStyles.imageContainer} ${doctorsPageStyles.imageContainerUnavailable}`}>
+                                        <img src={doctor.image || "/placeholder-doctor.jpg"} alt={doctor.name} loading="lazy" className={doctorsPageStyles.doctorImageUnavailable}
+                                            onError={(e) => {
+                                            e.currentTarget.onerror = null;
+                                            e.currentTarget.src = "/placeholder-doctor.jpg";
+                                            }}/>
+                                    </div>
+                                )}
+                            <h3 className={doctorsPageStyles.doctorName}>{doctor.name}</h3>
+                            <p className={doctorsPageStyles.doctorSpecialization}>{doctor.specialization}</p>
+                            
+                            <div className={doctorsPageStyles.experienceBadge}>
+                                <Medal className={doctorsPageStyles.experienceIcon} />
+                                <span>{doctor.experience || "-" } years Experience</span>
+                            </div>
+
+                            {doctor.available}
+                        </div>
+                    ))
+                )}
+            </div>
+        )}
+      </div>
     </div>
   )
 }
