@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { servicePageStyles, serviceCardStyles } from "../assets/dummyStyles"
 import { ChevronsRight, MousePointer2Off } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const PlaceholderImg = "/placeholder-service.jpg";
 
@@ -95,10 +96,111 @@ const ServiceCard = ({ service }) => {
 };
 
 
-const ServicePage = () => {
+const ServicePage = ({ previewCount = 9999}) => {
+
+    const API_BASE = "http://localhost:4000";
+
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    // to load services coming from the server
+    async function loadServices() {
+        setLoading(true);
+        setError("");
+        try {
+            const res = await fetch(`${API_BASE}/api/services`);
+            const json = await res.json().catch(() => null);
+
+        if (!res.ok) {
+            const msg = (json && json.message) || `Failed to load services (${res.status})`;
+            setError(msg);
+            setServices([]);
+            setLoading(false);
+            return;
+        }
+
+        const items = (json && (json.data || json)) || [];
+        const normalized = (Array.isArray(items) ? items : []).map((s) => {
+            const id = s._id || s.id;
+            const image = s.imageUrl || s.image || s.imageSmall || "";
+            const available = typeof s.available === "boolean"
+                ? s.available
+                : typeof s.availability === "string"
+                ? s.availability.toLowerCase() === "available"
+                : s.availability === "Available" || s.available === true;
+
+            return {
+                id,
+                name: s.name || "Service",
+                shortDescription: s.shortDescription || s.about || "",
+                image,
+                imageSmall: s.imageSmall || null,
+                imageMedium: s.imageMedium || null,
+                imageLarge: s.imageLarge || null,
+                imageSrcSet: s.imageSrcSet || null,
+                imageWebp: s.imageWebp || null,
+                price: s.price ?? s.fee ?? 0,
+                available,
+                raw: s,
+            };
+        });
+
+        setServices(normalized);
+        } catch (err) {
+            console.error("load services error:", err);
+            setError("Network error while loading services.");
+            setServices([]);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        loadServices();
+    }, [API_BASE]);
+
+    const shown = services.slice(0, previewCount);
+  
+  
   return (
-    <div>
-      Service Page
+    <div className={servicePageStyles.pageContainer}>
+      <div className={servicePageStyles.maxWidthContainer}>
+        <header className={servicePageStyles.header}>
+            <h1 className={servicePageStyles.title}>Our Diagnostic Services</h1>
+            <p className={servicePageStyles.subtitle}>Safe, accurate & reliable testing.</p>
+        </header>
+
+        {error && (
+          <div className={servicePageStyles.errorContainer}>
+            <div className={servicePageStyles.errorText}>{error}</div>
+            <button onClick={loadServices} className={servicePageStyles.retryButton}>Retry</button>
+          </div>
+        )}
+
+        {loading ? (
+          <section className={servicePageStyles.skeletonGrid}>
+            {Array.from({length: 8}).map((_,i) => (
+              <div key={i} className={servicePageStyles.skeletonCard}>
+                <div className={servicePageStyles.skeletonImage}></div>
+                <div className={servicePageStyles.skeletonText1}></div>
+                <div className={servicePageStyles.skeletonText2}></div>
+                <div className={servicePageStyles.skeletonButton}></div>
+              </div>
+            ))}
+          </section>
+        ) : (
+          <section className={servicePageStyles.servicesGrid}>
+            {shown.length > 0 ? (
+              shown.map((s) => <ServiceCard key={s.id || s.name} service={s} />)
+            ) : (
+              <div className={servicePageStyles.emptyState}>
+                No services available.
+              </div>
+            )}
+          </section>
+        )}
+      </div>
     </div>
   )
 }
