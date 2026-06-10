@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { contactPageStyles } from "../assets/dummyStyles"
+import { Mail, MapPin, MessageSquare, Phone, SendHorizonal, Stethoscope, User } from "lucide-react";
 
 const ContactPage = () => {
 
@@ -67,6 +68,7 @@ const ContactPage = () => {
 
     function handleChange(e) {
         const { name, value } = e.target;
+
         if (name === "department") {
             setForm((prev) => ({ ...prev, department: value, service: "" }));
         } else {
@@ -127,6 +129,113 @@ const ContactPage = () => {
             <p className={contactPageStyles.formSubtitle}>
                 Fill the form - we'll open WhatsApp so you can connect with us instantly.
             </p>
+
+            <form onSubmit={handleSubmit} className={contactPageStyles.formSpace}>
+                <div className={contactPageStyles.formGrid}>
+                    <div>
+                        <label className={contactPageStyles.label}>
+                            <User size={16}/> Full Name
+                        </label>
+                        <input name="name" value={form.name} onChange={handleChange} placeholder="Full Name" className={contactPageStyles.input} />
+
+                        {errors.name && (
+                            <p className={contactPageStyles.error}>{errors.name}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className={contactPageStyles.label}>
+                            <Mail size={16}/> Email
+                        </label>
+                        <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="example@gmail.com" className={contactPageStyles.input} />
+
+                        {errors.name && (
+                            <p className={contactPageStyles.error}>{errors.email}</p>
+                        )}
+                    </div>
+                </div>
+
+                 { /** Phone + Department */}
+                <div className={contactPageStyles.formGrid}>
+                    <div>
+                        <label className={contactPageStyles.label}>
+                            <Phone size={16} /> Phone
+                        </label>
+                        <input name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="1234567890" className={contactPageStyles.input}maxLength="10"
+                            aria-invalid={!!errors.phone} />
+                        
+                        {errors.phone && (
+                            <p className={contactPageStyles.error}>{errors.phone}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className={contactPageStyles.label}>
+                            <MapPin size={16} /> Department
+                        </label>
+                        <select name="department" value={form.department} onChange={handleChange} className={contactPageStyles.input}>
+                            <option value="">Select Department</option>
+                            {departments.map((d) => (
+                                <option key={d} value={d}>
+                                    {d}
+                                </option>
+                            ))}
+                        </select>
+                        
+                        {errors.department && (
+                        <p className={contactPageStyles.error}>
+                            {errors.department}
+                        </p>
+                        )}
+                    </div>
+                </div>
+
+                <div>
+                    <label className={contactPageStyles.label}>
+                        <Stethoscope size={16} /> Service
+                    </label>
+                    <select name="service" value={form.service} onChange={handleChange} className={contactPageStyles.input}>
+                        <option value="">
+                            Select Service (or choose Department above)
+                        </option>
+                        {availableServices.map((s) => (
+                            <option key={s} value={s}>
+                                {s}
+                            </option>
+                        ))}
+                    </select>
+
+                    {errors.service && (
+                        <p className={contactPageStyles.error}>
+                            {errors.service}
+                        </p>
+                    )}
+                </div>
+
+                <div>
+                    <label className={contactPageStyles.label}>
+                        <MessageSquare size={16} /> Message
+                    </label>
+
+                    <textarea name="message" value={form.message} onChange={handleChange} placeholder="Describe your concern briefly..." rows={4} className={contactPageStyles.textarea} />
+
+                    {errors.message && (
+                        <p className={contactPageStyles.error}>{errors.message}</p>
+                    )}
+                </div>
+
+                <div className={contactPageStyles.buttonContainer}>
+                    <button type="submit" className={contactPageStyles.button}>
+                        <SendHorizonal size={18} /> <span>Send via WhatsApp</span>
+                    </button>
+
+                    {sent && (
+                        <p className={contactPageStyles.sentMessage}>
+                            Opening WhatsApp and clearing form...
+                        </p>
+                    )}
+                </div>
+            </form>
         </div>
       </div>
     </div>
