@@ -2,7 +2,7 @@ import { useMemo, useState } from "react"
 import { navbarStylesDr } from "../assets/dummyStyles"
 import logo from '../assets/logo.png'
 import { NavLink, useLocation, useParams } from "react-router-dom";
-import { Calendar, Edit, Home, LogOut } from "lucide-react";
+import { Calendar, Edit, Home, LogOut, Menu, X } from "lucide-react";
 
 const DoctorNavbar = () => {
 
@@ -27,7 +27,8 @@ const DoctorNavbar = () => {
     ]
 
   return (
-    <nav className={navbarStylesDr.navContainer}>
+    <>
+         <nav className={navbarStylesDr.navContainer}>
       <div className={navbarStylesDr.leftBrand}>
         <div className={navbarStylesDr.logoContainer}>
             <img src={logo} alt="logo" className={navbarStylesDr.logoImage} />
@@ -60,8 +61,41 @@ const DoctorNavbar = () => {
         }}>
             <LogOut size={16} /><span>LogOut</span>
         </button>
+
+        {/** to toggle */}
+        <button onClick={() => setOpen((s) => !s)} className={navbarStylesDr.hamburgerButtonMd}>
+            {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
+        <button onClick={() => setOpen((s) => !s)} className={navbarStylesDr.hamburgerButtonLg}>
+            {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </div>
     </nav>
+
+    <div className={navbarStylesDr.mobileMenuContainer(open)}>
+        <div className={navbarStylesDr.mobileMenuContent}>
+            {navItems.map(({name, to, Icon}) => (
+                <NavLink key={to} to={to} end={to === basePath} className={({isActive}) => `${navbarStylesDr.mobileBaseLink} ${isActive ? navbarStylesDr.mobileActiveLink : navbarStylesDr.mobileInactiveLink}`}
+                onClick={() => setOpen(false)}>
+                    <Icon size={18} className="text-emerald-400" />
+                    <span>{name}</span>
+                </NavLink>         
+            ))}
+
+            <button className={navbarStylesDr.mobileLogoutButton} onClick={() => {
+                setOpen(false);
+                window.location.href = "/doctor-admin/login";
+            }}>
+               <div className={navbarStylesDr.mobileLogoutContent}>
+                    <LogOut size={16} /> Logout
+               </div>     
+            </button>
+        </div>
+    </div>
+
+    <div className={navbarStylesDr.spacer}></div>
+    </>
+   
   )
 }
 
