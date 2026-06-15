@@ -1,6 +1,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { listPageStyles } from '../assets/dummyStyles'
+import { useParams } from 'react-router-dom';
 
 // helper functions similar to dashboard page
 function parseDateTime(date, time) {
@@ -285,6 +286,173 @@ function RescheduleButton({ appointment, onReschedule }) {
 }
 
 const ListPage = () => {
+
+    const API_BASE = 'http://localhost:4000';
+
+    const [appointments, setAppointments] = useState([]);
+    const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const params = useParams();
+    const doctorId = params.id;
+
+    // to fetch the appointment using the id
+    async function fetchAppointments() {
+        setLoading(true);
+        setError(null);
+        try {
+        const url = `${API_BASE}/api/appointments/doctor/${encodeURIComponent(
+            doctorId,
+        )}`;
+
+        const res = await fetch(url);
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(
+            body?.message || `Failed to fetch appointments (${res.status})`,
+            );
+        }
+        const body = await res.json();
+        const list = Array.isArray(body.appointments)
+            ? body.appointments
+            : Array.isArray(body)
+            ? body
+            : (body.items ?? body.data ?? []);
+        const normalized = (Array.isArray(list) ? list : [])
+            .map(normalizeAppointment)
+            .filter(Boolean);
+        setAppointments(normalized);
+        } catch (err) {
+        console.error("fetchAppointments:", err);
+        setError(err.message || "Failed to load appointments");
+        setAppointments([]);
+        } finally {
+        setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchAppointments();
+    }, []);
+
+    // to update the status it is similar to Dashboard Page
+    async function updateStatusRemote(id, newStatus) {
+        const appt = appointments.find((p) => p.id === id);
+        if (!appt) return;
+        if (appt.status === "complete" || appt.status === "cancelled") return;
+
+        const backendStatus = frontendToBackendStatus(newStatus);
+
+        setAppointments((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p)),
+        );
+
+        try {
+        const res = await fetch(`${API_BASE}/api/appointments/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: backendStatus }),
+        });
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(
+            body?.message || `Status update failed (${res.status})`,
+            );
+        }
+        const body = await res.json();
+        const updated = body.appointment || body;
+        setAppointments((prev) =>
+            prev.map((p) =>
+            p.id === id
+                ? normalizeAppointment(updated) || {
+                    ...p,
+                    status: backendToFrontendStatus(
+                    updated.status || backendStatus,
+                    ),
+                }
+                : p,
+            ),
+        );
+        } catch (err) {
+        console.error("updateStatusRemote:", err);
+        setAppointments((prev) =>
+            prev.map((p) => (p.id === id ? { ...p, status: appt.status } : p)),
+        );
+        setError(err.message || "Failed to update status");
+        }
+    }
+
+    async function rescheduleRemote(id, newDate, newTime24) {
+        const appt = appointments.find((p) => p.id === id);
+        if (!appt) return;
+        if (appt.status === "complete" || appt.status === "cancelled") return;
+
+        const time12 = to12HourFrom24(newTime24);
+
+        setAppointments((prev) =>
+        prev.map((p) =>
+            p.id === id
+            ? { ...p, date: newDate, time: newTime24, status: "rescheduled" }
+            : p,
+        ),
+        );
+
+        try {
+        const res = await fetch(`${API_BASE}/api/appointments/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ date: newDate, time: time12 }),
+        });
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body?.message || `Reschedule failed (${res.status})`);
+        }
+        const body = await res.json();
+        const updated = body.appointment || body;
+        setAppointments((prev) =>
+            prev.map((p) =>
+            p.id === id
+                ? normalizeAppointment(updated) || {
+                    ...p,
+                    date: newDate,
+                    time: newTime24,
+                    status: backendToFrontendStatus(
+                    updated.status || "Rescheduled",
+                    ),
+                }
+                : p,
+            ),
+        );
+        } catch (err) {
+        console.error("rescheduleRemote:", err);
+        setError(err.message || "Failed to reschedule — reloading");
+        await fetchAppointments();
+        }
+    }
+
+    function updateStatus(id, newStatus) {
+        updateStatusRemote(id, newStatus);
+    }
+
+    function updateDateTime(id, newDate, newTime) {
+        rescheduleRemote(id, newDate, newTime);
+    }
+
+    const filtered = useMemo(() => {
+        return [...appointments]
+        .filter((a) =>
+            search
+            ? (a.patient || "").toLowerCase().includes(search.toLowerCase())
+            : true,
+        )
+        .filter((a) => (statusFilter ? a.status === statusFilter : true))
+        .sort(
+            (a, b) => parseDateTime(b.date, b.time) - parseDateTime(a.date, a.time),
+        );
+    }, [appointments, search, statusFilter]);
+
+
   return (
     <div>
         
