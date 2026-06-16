@@ -2,6 +2,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { listPageStyles } from '../assets/dummyStyles'
 import { useParams } from 'react-router-dom';
+import { Search, X } from 'lucide-react';
+
+
+const API_BASE = 'http://localhost:4000';
 
 // helper functions similar to dashboard page
 function parseDateTime(date, time) {
@@ -287,8 +291,6 @@ function RescheduleButton({ appointment, onReschedule }) {
 
 const ListPage = () => {
 
-    const API_BASE = 'http://localhost:4000';
-
     const [appointments, setAppointments] = useState([]);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -454,8 +456,79 @@ const ListPage = () => {
 
 
   return (
-    <div>
-        
+    <div className={listPageStyles.pageContainer}>
+        <div className={listPageStyles.contentWrapper}>
+            <div className={listPageStyles.headerContainer}>
+                <div>
+                    <h1 className={listPageStyles.headerTitle}>All Appointments</h1>
+                    <p className={listPageStyles.headerSubtitle}>Latest at top - search by patient name</p>
+                </div>
+
+                <div className={listPageStyles.searchFilterContainer}>
+                    <div className={listPageStyles.searchContainer}>
+                        <div className={listPageStyles.searchIconContainer}>
+                            <Search className={listPageStyles.searchIcon} />
+                        </div>
+                        <input value={search} onChange={(e) => setSearch(e.target.value)} className={listPageStyles.searchInput} placeholder='Search Patient Name' />
+                        {search && (
+                            <button onClick={() => setSearch("")} className={listPageStyles.clearSearchButton}>
+                                <X className={listPageStyles.clearSearchIcon} />
+                            </button>
+                        )}
+                    </div>
+
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={listPageStyles.statusFilter} title="Filter by status">
+                        <option value="">All</option>
+                        <option value="complete">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="rescheduled">Rescheduled</option>
+                    </select>
+                </div>
+            </div>
+
+            {loading ? (
+                <div className={listPageStyles.loadingContainer}>
+                    Loading Appointments...
+                </div>
+            ) : error ? (
+                <div className={listPageStyles.errorContainer}>Error: {error}</div>
+            ) : (
+                <div className={listPageStyles.appointmentsGrid}>
+                    {filtered.map((a) => (
+                        <article key={a.id} className={listPageStyles.appointmentCard}>
+                            <header className={listPageStyles.cardHeader}>
+                                <div className={listPageStyles.cardAvatar}>
+                                    {a.doctorImage ? (
+                                        <img src={a.doctorImage} alt={a.doctorName} className={listPageStyles.cardAvatarImage} onError={(e) => (e.currentTarget.style.display = "none")} />
+                                    ) : (
+                                        <div className={listPageStyles.cardAvatarFallback}>
+                                            {(a.doctorName || "D").charAt(0)}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className={listPageStyles.cardContent}>
+                                    <div className={listPageStyles.cardPatientName}>
+                                        {a.patient}
+                                    </div>
+                                    <div className={listPageStyles.cardPatientInfo}>
+                                        {a.age} yrs &middot; {a.gender}
+                                    </div>
+                                    <div className={listPageStyles.cardDoctorInfo}>
+                                        <span className={listPageStyles.cardDoctorName}>
+                                            {a.doctorName}
+                                        </span>
+                                    </div>
+                                    <div className={listPageStyles.cardSpeciality}>
+                                        {a.speciality}
+                                    </div>
+                                </div>
+                            </header>
+                        </article>
+                    ))}
+                </div>
+            )}
+        </div>
     </div>
   )
 }
