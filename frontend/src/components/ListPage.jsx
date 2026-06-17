@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { listPageStyles } from '../assets/dummyStyles'
 import { useParams } from 'react-router-dom';
-import { Search, X } from 'lucide-react';
+import { Calendar, Phone, Search, X } from 'lucide-react';
 
 
 const API_BASE = 'http://localhost:4000';
@@ -524,6 +524,34 @@ const ListPage = () => {
                                     </div>
                                 </div>
                             </header>
+
+                            <div className={listPageStyles.dateTimeSection}>
+                              <div className={listPageStyles.dateTimeContainer}>
+                                <Calendar className={listPageStyles.calendarIcon} />
+                                <span className={listPageStyles.dateText}>
+                                  {formatDate(a.date)}
+                                </span>
+                                <span className=" sm:inline">:</span>
+                                <span>{formatTimeAMPM(a.time)}</span>
+                              </div>
+                              <div className={listPageStyles.feeText}>₹{a.fee}</div>
+                            </div>
+
+                            <div className={listPageStyles.contactStatusSection}>
+                              <div className={listPageStyles.phoneContainer}>
+                                <Phone className={listPageStyles.phoneIcon} />
+                                <span>{a.mobile}</span>
+                              </div>
+                            </div>
+
+                            <div className={listPageStyles.statusContainer}>
+                              <StatusBadge status={a.status} />
+                              <StatusSelect appointment={a} onChange={(s) => updateStatus(a.id, s)} />
+                            </div>
+
+                            <div className={listPageStyles.rescheduleContainer}>
+                               <RescheduleButton appointment={a} onReschedule={(d, t) => updateDateTime(a.id, d, t)} />
+                            </div>
                         </article>
                     ))}
                 </div>
