@@ -3,6 +3,8 @@ import { appointmentPageStyles, cardStyles, badgeStyles, iconSize } from "../ass
 import axios from 'axios';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth, useUser } from '@clerk/react'
+import { Toaster } from "react-hot-toast";
+
 
 const API_BASE = 'http://localhost:4000';
 const API = axios.create({baseURL: API_BASE})
@@ -458,7 +460,34 @@ const AppointmentPage = () => {
 
 
   return (
-    <div>AppointmentPage</div>
+    <div className={appointmentPageStyles.pageContainer}>
+      <Toaster position="top-right" />
+      <div className={appointmentPageStyles.maxWidthContainer}>
+        <h1 className={appointmentPageStyles.doctorTitle}>Your Doctor Appointments</h1>
+        {loadingDoctors && (
+          <div className={appointmentPageStyles.loadingText}>
+            Loading Doctors...
+          </div>
+        )}
+
+        {!loadingDoctors && appointmentData.length === 0 && (
+          <div className={appointmentPageStyles.emptyStateText}>
+            No doctor appointments found.
+          </div>
+        )}
+
+        <div className={appointmentPageStyles.doctorGrid}>
+          {appointmentData.map((item) => (
+            <div key={item.id} className={cardStyles.doctorCard}>
+              <div className={cardStyles.doctorImageContainer}>
+                <img src={item.image || "/placeholder-doctor.png"} alt={item.doctor} className={cardStyles.image} loading="lazy" />
+              </div>
+              <h2 className={cardStyles.doctorName}>{item.doctor}</h2>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
 
