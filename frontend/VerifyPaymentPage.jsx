@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -27,15 +28,31 @@ const VerifyPaymentPage = () => {
             }
 
             try {
-                
+                const res = await axios.get(`${API_BASE}/api/appointments/confirm`, {
+                    params: {session_id: sessionId},
+                    timeout: 15000,
+                });
+
+                if(cancelled) return;
+                if(res?.data?.success){
+                    navigate("/appointments?payment_status=Paid", {replace: true});
+                }
+                else{
+                    navigate("/appointments?payment_status=Failed", {replace: true});
+                }
             } catch (error) {
-                
+                console.log("Payment verification failed:", error);
+                if(!cancelled)
+                    navigate("/appointments?payment_status=Failed", {replace: true})
             }
         }
-    })
-  return (
-    <div>VerifyPaymentPage</div>
-  )
+        verifyPayment();
+        return () => {
+            cancelled = true;
+        }
+    }, [location, navigate])
+  
+    return null;
 }
 
 export default VerifyPaymentPage
