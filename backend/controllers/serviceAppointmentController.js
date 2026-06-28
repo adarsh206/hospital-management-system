@@ -417,7 +417,7 @@ export const updateServiceAppointment = async (req, res) => {
         }
         }
 
-        const updated = await ServiceAppointment.findOneAndUpdate(id, { $set: updates }, {
+        const updated = await ServiceAppointment.findByIdAndUpdate(id, { $set: updates }, {
             new: true, runValidators: true
         })
 
