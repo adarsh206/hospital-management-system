@@ -93,7 +93,7 @@ const Footer = () => {
                             <div className={footerStyles.contactIconWrapper}>
                                 <Phone className={footerStyles.contactIcon} />
                             </div>
-                            <span className={footerStyles.contactText}>+91 8299431275</span>
+                            <span className={footerStyles.contactText}>+91 9279825054</span>
                         </div>
 
                         <div className={footerStyles.contactItem}>
