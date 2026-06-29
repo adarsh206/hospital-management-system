@@ -20,6 +20,24 @@ Key goals and design decisions:
 
 See the Detailed Descriptions section below for more information about folders and important files.
 
+## APP IMAGES
+
+<img width="1920" height="3038" alt="Image" src="https://github.com/user-attachments/assets/646b96f3-31c4-47da-87d4-a7375ec7e9f0" />
+
+<img width="1920" height="3038" alt="Image" src="https://github.com/user-attachments/assets/bd0a6d6a-bd2c-4bde-9faa-273617d76a02" />
+
+<img width="1920" height="1610" alt="Image" src="https://github.com/user-attachments/assets/f4ee49a9-13d4-42c2-823a-7e9061f9f3bd" />
+
+<img width="1920" height="1227" alt="Image" src="https://github.com/user-attachments/assets/50b56d66-9463-4e88-91d7-53935c7aaf4d" />
+
+<img width="1920" height="1610" alt="Image" src="https://github.com/user-attachments/assets/bd79c64a-97b9-4980-a476-93685a567552" />
+
+<img width="1920" height="1460" alt="Image" src="https://github.com/user-attachments/assets/ffc2da3e-2262-4f3e-8f50-9af2817c6582" />
+
+<img width="1920" height="1703" alt="Image" src="https://github.com/user-attachments/assets/e2434eb8-aff0-4a6f-b526-4408f92c6f18" />
+
+<img width="1920" height="1610" alt="Image" src="https://github.com/user-attachments/assets/ecb12070-990c-48a8-b599-640e744e04b2" />
+
 ## Tech Stack Used
 
 - Frontend: React, Vite, React Router, JavaScript, CSS
