@@ -133,7 +133,7 @@ See the Detailed Descriptions section below for more information about folders a
 - Frontend: React, Vite, React Router, JavaScript, CSS
 - Backend: Node.js, Express.js
 - Database: MongoDB with Mongoose
-- Authentication: JWT
+- Authentication: JWT, Clerk
 - File Uploads: Multer and Cloudinary
 - Development Tools: npm, ESLint, Git, VS Code
 - Optional Integrations: Stripe for payments and email/SMS services for notifications
@@ -144,6 +144,8 @@ See the Detailed Descriptions section below for more information about folders a
 - npm (or yarn)
 - MongoDB (local or hosted)
 - Cloudinary account (optional; used for image uploads)
+- Clerk for authentication
+- Stripe for online payment
 
 ## Quick Start
 
@@ -907,6 +909,30 @@ These are example REST endpoints the `backend` exposes. Adjust paths to match yo
 - Login endpoints return a signed JWT. The token should include a `role` claim (e.g., `doctor`, `admin`) and an expiration.
 - Protected backend routes verify the token using `doctorAuth.js`. Tokens may be sent in the `Authorization: Bearer <token>` header or via HTTP-only cookies.
 - On the client, prefer storing refresh tokens securely (HTTP-only cookies) and keep access tokens short-lived.
+
+### Clerk (Authentication)
+
+This project can integrate Clerk as an authentication and user management provider instead of a custom JWT implementation. Clerk provides pre-built UI, session management, social login, multifactor authentication, and developer SDKs for both frontend and backend, which simplifies implementing secure auth flows.
+
+Key points for using Clerk in this repo:
+- Frontend: use Clerk's React SDK (`@clerk/clerk-react`) to handle sign-in, sign-up, session management, and access to the current user object. Clerk components and hooks (e.g., `SignIn`, `useUser`) reduce custom UI and token plumbing.
+- Backend: verify Clerk sessions or JSON Web Tokens using Clerk's server SDK (`@clerk/clerk-sdk-node`) or middleware. Replace or extend `doctorAuth.js` to validate incoming requests by confirming Clerk session tokens and mapping Clerk user IDs to application users.
+- Role mapping: store the Clerk `userId` on your `Doctor` or `Admin` model and manage roles either in Clerk user metadata (custom attributes) or in your database. Use Clerk's metadata or custom claims for lightweight role checks, and authoritative role enforcement in the backend for sensitive actions.
+- Session handling: prefer Clerk-managed sessions (HTTP-only cookies) for security; the backend verifies sessions and does not have to implement refresh-token logic manually.
+- Webhooks & sync: use Clerk webhooks to synchronize user profile updates (email, name, avatar) back to your local `Doctor` records if you want a denormalized snapshot in your DB.
+- Security features: Clerk supports email verification, passwordless and social logins, and optional MFA — enabling these improves the security posture with minimal work.
+
+Recommended environment variables for Clerk integration:
+- `CLERK_PUBLISHABLE_KEY` (frontend) — Clerk publishable key used by the client SDK.
+- `CLERK_SECRET_KEY` (backend) — server-side API secret for verifying sessions and calling Clerk APIs.
+- Optionally configure Clerk webhooks and provide `CLERK_WEBHOOK_SECRET` for verifying webhook payloads.
+
+Integration tips:
+- During signup, create or link a `Doctor` document using the Clerk `userId` so you can attach role and clinic-specific metadata server-side.
+- If you need role changes (e.g., promoting a user to admin), prefer updating a server-side role field and use Clerk metadata only for read-optimized checks unless Clerk is your single source of truth for roles.
+- Update `backend/middlewares/doctorAuth.js` to call Clerk's verification helper and extract the Clerk user identity and any custom claims needed for authorization checks.
+
+Using Clerk reduces the amount of homegrown auth code you need to maintain while giving you flexible, secure features out of the box. Add a short integration test to ensure your protected admin/doctor routes accept Clerk-verified requests and map Clerk users to `Doctor` records correctly.
 
 ## Recommended Environment Variables (`.env` example)
 
